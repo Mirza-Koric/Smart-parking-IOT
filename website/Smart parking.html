@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%; margin: 0;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart parking</title>
+
+    <style>
+        .bg {
+            background-image: url("parking_background2.avif");
+            height: 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+    </style>
+</head>
+
+<body style="height: 100%; margin: 0;">
+    <div class="bg">
+        <div>
+
+            <div style="display: flex; flex-direction: row; text-align: center; padding-top: 10px;">
+                <div style="width: 35%;"></div>
+                <h1 style="margin: 0;">Current number of cars is: </h1>
+                <h1 id="number" style="margin: 0;"> here goes the number </h1>
+            </div>
+
+
+
+
+            <img src="carSmall.png" alt="" id="car" width="91px" height="200px" style="display: none;">
+        </div>
+
+        <div>
+            <canvas id="myCanvas" width="1500" height="620" style="border:1px solid #d3d3d3; margin-left: 15px;">
+            </canvas>
+        </div>
+
+        <div style="display: none;">
+            <input type="text" id="input">
+            <button id="sendButton" style="height: 30px; width: 100px;"> Send data </button>
+        </div>
+
+        <div id="rectangle"></div>
+    </div>
+
+
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSkokvNSVYepqkjsg2Ak2kM8q3az11SQk",
+            authDomain: "parking-5f5fb.firebaseapp.com",
+            databaseURL: "https://parking-5f5fb-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "parking-5f5fb",
+            storageBucket: "parking-5f5fb.appspot.com",
+            messagingSenderId: "339514407538",
+            appId: "1:339514407538:web:ba850b2a577dbee6e560eb"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        import { getDatabase, set, get, update, remove, ref, child, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+        const db = getDatabase();
+        const numberReference = ref(db, 'Number/number');
+
+        const colorReference = ref (db, 'Change/color');
+
+        var NumberOfCars = document.getElementById("number");
+
+        var CarNumberValue = 0;
+
+        var boja=0;
+
+        window.addEventListener("load", GetData);
+
+        function GetData() {
+            onValue(numberReference, (snapshot) => {
+                NumberOfCars.innerHTML = snapshot.val();
+                CarNumberValue = snapshot.val();
+                canvasFunction();
+            })
+
+            onValue(colorReference, (snapshot) => {
+
+                boja = snapshot.val();
+                console.log(boja);
+                if (boja===1) {
+                document.getElementById("rectangle").style.background = "blue";
+                }
+            })
+
+            // get(child(dbref,'Number'))
+            // .then((snapshot) =>{
+            //     if (snapshot.exists())
+            //     {
+            //         console.log(snapshot.val());
+            //         NumberOfCars.innerHTML=snapshot.val();
+            //     }
+            //     else
+            //     {
+            //         console.log("No data");
+            //     }
+            // })
+        }
+
+        var input = document.getElementById("input");
+
+        var sendButton = document.getElementById("sendButton");
+        sendButton.addEventListener("click", SendData);
+
+        function SendData() {
+            var value = input.value;
+
+            const dbref = getDatabase();
+            set(ref(dbref, 'Number'), {
+                number: value
+            });
+
+        }
+
+        const canvasFunction = () => {
+
+            var temp = CarNumberValue / 10;
+            temp = Math.ceil(temp);
+
+            console.log("temp je: " + temp);
+
+
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            var img = document.getElementById("car");
+
+            ctx.lineWidth = 15;
+            ctx.strokeStyle = "#FFFFFF";
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.moveTo(0, 310);
+            ctx.lineTo(1500, 310);
+
+            ctx.moveTo(300, 310);
+            ctx.lineTo(300, 0);
+            ctx.lineTo(300, 620);
+
+            ctx.moveTo(600, 310);
+            ctx.lineTo(600, 0);
+            ctx.lineTo(600, 620);
+
+            ctx.moveTo(900, 310);
+            ctx.lineTo(900, 0);
+            ctx.lineTo(900, 620);
+
+            ctx.moveTo(1200, 310);
+            ctx.lineTo(1200, 0);
+            ctx.lineTo(1200, 620);
+
+            ctx.stroke();
+
+
+
+            for (let index = 0; index < temp; index++) {
+                if (index < 5) {
+                    ctx.drawImage(img, index * 300 + 98, 50);
+                }
+
+                if (index > 4) {
+                    ctx.drawImage(img, (index - 5) * 300 + 98, 375);
+                }
+            }
+
+
+            // ctx.drawImage(img, 98, 50);
+            // ctx.drawImage(img, 398, 50);
+            // ctx.drawImage(img, 698, 50);
+            // ctx.drawImage(img, 998, 50);
+            // ctx.drawImage(img, 1298, 50);
+
+            // ctx.drawImage(img, 98, 375);
+            // ctx.drawImage(img, 398, 375);
+            // ctx.drawImage(img, 698, 375);
+            // ctx.drawImage(img, 998, 375);
+            // ctx.drawImage(img, 1298, 375);
+        }
+
+        window.onload = canvasFunction()
+    </script>
+<style>
+    #rectangle{
+    width:200px;
+    height:100px;
+    background:black;
+}
+</style>
+
+</body>
+
+</html>
